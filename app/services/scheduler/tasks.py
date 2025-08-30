@@ -9,7 +9,7 @@ from taskiq_redis import RedisScheduleSource
 from app.services.weather_service import Weather, get_weather
 from config.config import settings
 
-broker = NatsBroker(servers=settings.nats_servers, queue="mailint_weather_queue")
+broker = NatsBroker(servers=settings.nats_servers, queue="mailing_weather_queue")
 redis_source = RedisScheduleSource(
     url=f"redis://{settings.redis_host}:{settings.redis_port}"
 )

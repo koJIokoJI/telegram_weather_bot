@@ -8,8 +8,10 @@ from aiogram.fsm.storage.base import DefaultKeyBuilder
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram_dialog import setup_dialogs
 from redis.asyncio import Redis, ConnectionError
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from config.config import settings
+from app.infrastructure.database.models import Base
 from app.bot.handlers import commands_router
 from app.bot.dialogs import weather_dialog
 from app.services.scheduler import broker, scheduler
@@ -27,6 +29,9 @@ async def main():
     except ConnectionError:
         logger.error("Failed to establish connection to Redis")
         return
+    engine = create_async_engine(url=settings.postgres_url, echo=False)
+    async with engine.connect() as connection:
+        await connection.run_sync(Base.metadata.create_all)
     storage = RedisStorage(
         redis=redis, key_builder=DefaultKeyBuilder(with_destiny=True)
     )
