@@ -7,7 +7,7 @@ from aiogram.enums.parse_mode import ParseMode
 from aiogram.fsm.storage.base import DefaultKeyBuilder
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram_dialog import setup_dialogs
-from redis.asyncio import Redis
+from redis.asyncio import Redis, ConnectionError
 
 from config.config import settings
 from app.bot.handlers import commands_router
@@ -21,6 +21,12 @@ async def main():
     redis = Redis(
         host=settings.redis_host, port=settings.redis_port, db=settings.redis_db
     )
+    try:
+        await redis.ping()
+        logger.info("Connection to Redis established")
+    except ConnectionError:
+        logger.error("Failed to establish connection to Redis")
+        return
     storage = RedisStorage(
         redis=redis, key_builder=DefaultKeyBuilder(with_destiny=True)
     )
@@ -43,7 +49,7 @@ async def main():
         logger.exception(e)
     finally:
         await redis.close()
-        logger.info("Connection t Redis closed")
+        logger.info("Connection to Redis closed")
         await broker.shutdown()
         logger.info("Connection to taskiq-broker closed")
         await bot.session.close()
