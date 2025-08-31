@@ -31,6 +31,11 @@ async def main():
     except ConnectionError:
         logger.error("Failed to establish connection to Redis")
         return
+    logger.debug("QWEQWEQWWQEWQE")
+    engine = create_async_engine(url=settings.postgres_url, echo=False)
+    async with engine.begin() as connection:
+        logger.debug("Creating table")
+        await connection.run_sync(Base.metadata.create_all)
     storage = RedisStorage(
         redis=redis, key_builder=DefaultKeyBuilder(with_destiny=True)
     )
@@ -43,7 +48,7 @@ async def main():
     dp.include_routers(commands_router, weather_dialog)
     setup_dialogs(dp)
 
-    Sessionmaker = await get_sessionmaker()
+    Sessionmaker = async_sessionmaker(engine, expire_on_commit=False)
     dp.update.outer_middleware(DbSessionMiddleware(session=Sessionmaker))
 
     await broker.startup()

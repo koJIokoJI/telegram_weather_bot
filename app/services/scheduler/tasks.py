@@ -24,7 +24,7 @@ scheduler = TaskiqScheduler(
 )
 
 
-@broker.task(schedule=[{"cron": "*/1 * * * *"}])
+@broker.task(schedule=[{"cron": "0 */4 * * *"}])
 async def periodic_task():
     bot = Bot(
         token=settings.bot_token,
@@ -32,7 +32,6 @@ async def periodic_task():
     )
     Sessionmaker = await get_sessionmaker()
     async with Sessionmaker() as session:
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
         users = await get_users(session=session)
     for row in users:
         city = row.default_city

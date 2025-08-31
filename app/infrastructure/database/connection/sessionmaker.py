@@ -7,7 +7,7 @@ from app.infrastructure.database.models import Base
 
 
 async def get_sessionmaker():
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    # asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     engine = create_async_engine(url=settings.postgres_url, echo=False)
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)

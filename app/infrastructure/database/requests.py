@@ -50,3 +50,9 @@ async def get_users(session: AsyncSession):
     statement = select(Users.telegram_id, Users.default_city)
     users = await session.execute(statement=statement)
     return users
+
+
+async def get_default_city(session: AsyncSession, telegram_id: int):
+    statement = select(Users.default_city).where(Users.telegram_id == telegram_id)
+    default_city = await session.execute(statement=statement)
+    return default_city.scalar()

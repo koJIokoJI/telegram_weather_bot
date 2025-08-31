@@ -1,5 +1,6 @@
 from aiogram_dialog import DialogManager
 
+from app.infrastructure.database.requests import get_default_city
 from app.services.weather_service import Weather, get_weather
 
 
@@ -22,7 +23,10 @@ async def first_show_getter(dialog_manager: DialogManager, **kwargs) -> dict[str
 
 
 async def menu_getter(dialog_manager: DialogManager, **kwargs) -> dict[str, str | bool]:
-    default_city = dialog_manager.dialog_data.get("default_city")
+    default_city = await get_default_city(
+        session=dialog_manager.middleware_data.get("session"),
+        telegram_id=kwargs.get("event_from_user").id,
+    )
     cities = dialog_manager.dialog_data.get("cities")
     show_default_city_changed = dialog_manager.dialog_data.get(
         "show_default_city_changed"
