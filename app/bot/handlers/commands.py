@@ -1,3 +1,5 @@
+import logging
+
 from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
@@ -7,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.bot.dialogs import WeatherSG
 from app.infrastructure.database import get_user, insert_user
 
+logger = logging.getLogger(__name__)
 commands_router = Router()
 
 
@@ -15,7 +18,9 @@ async def process_start_command(
     message: Message, session: AsyncSession, dialog_manager: DialogManager
 ):
     user = await get_user(session=session, telegram_id=message.from_user.id)
+    logger.debug(user)
     if user is None:
+        await message.answer(text="ТЫ НОВИЧОК")
         await insert_user(session=session, telegram_id=message.from_user.id)
     await dialog_manager.start(
         state=WeatherSG.city_input,

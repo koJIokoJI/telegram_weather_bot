@@ -4,6 +4,7 @@ from aiogram_dialog.widgets.kbd import Button
 from aiogram_dialog.widgets.input import MessageInput, ManagedTextInput
 
 from app.bot.dialogs import WeatherSG
+from app.infrastructure.database import insert_user
 
 
 def city_check(city: str) -> str | ValueError:
@@ -26,12 +27,25 @@ async def correct_city_check_handler(
     city: str,
 ) -> None:
     city = city.lower().capitalize()
+    session = dialog_manager.middleware_data.get("session")
     if "-" in city:
         hyphen = city.find("-")
         city = city[:hyphen].capitalize() + "-" + city[hyphen + 1 :].capitalize()
     if dialog_manager.dialog_data.get("quick_access_city"):
         dialog_manager.dialog_data["cities"].append(city)
+        await insert_user(
+            session=session,
+            telegram_id=message.from_user.id,
+            default_city=dialog_manager.dialog_data["default_city"],
+            cities=dialog_manager.dialog_data["cities"],
+        )
     else:
+        await insert_user(
+            session=session,
+            telegram_id=message.from_user.id,
+            default_city=city,
+            cities=dialog_manager.dialog_data["cities"],
+        )
         dialog_manager.dialog_data.update(
             default_city=city, show_default_city_changed=True
         )

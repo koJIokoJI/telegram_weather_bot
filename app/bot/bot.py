@@ -15,6 +15,8 @@ from app.infrastructure.database.models import Base
 from app.bot.handlers import commands_router
 from app.bot.dialogs import weather_dialog
 from app.services.scheduler import broker, scheduler
+from app.bot.middlewares import DbSessionMiddleware
+from app.infrastructure.database.connection import get_sessionmaker
 
 logger = logging.getLogger(__name__)
 
@@ -29,9 +31,6 @@ async def main():
     except ConnectionError:
         logger.error("Failed to establish connection to Redis")
         return
-    engine = create_async_engine(url=settings.postgres_url, echo=False)
-    async with engine.connect() as connection:
-        await connection.run_sync(Base.metadata.create_all)
     storage = RedisStorage(
         redis=redis, key_builder=DefaultKeyBuilder(with_destiny=True)
     )
@@ -43,6 +42,9 @@ async def main():
 
     dp.include_routers(commands_router, weather_dialog)
     setup_dialogs(dp)
+
+    Sessionmaker = await get_sessionmaker()
+    dp.update.outer_middleware(DbSessionMiddleware(session=Sessionmaker))
 
     await broker.startup()
     logger.info("Broker started")

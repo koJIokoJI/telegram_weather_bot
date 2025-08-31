@@ -12,6 +12,14 @@ async def insert_user(
     cities: list[str] = [],
     mailing_agreement: bool = False,
 ):
+    # if default_city == "":
+    #     default_city = await session.execute(
+    #         select(Users.default_city).where(Users.telegram_id == telegram_id)
+    #     )
+    # if cities == []:
+    #     cities = await session.execute(
+    #         select(Users.cities).where(Users.telegram_id == telegram_id)
+    #     )
     statement = insert(Users).values(
         {
             "telegram_id": telegram_id,
@@ -35,4 +43,10 @@ async def insert_user(
 async def get_user(session: AsyncSession, telegram_id: int):
     statement = select(Users).where(Users.telegram_id == telegram_id)
     user = await session.execute(statement=statement)
-    return user.first()
+    return user.scalar()
+
+
+async def get_users(session: AsyncSession):
+    statement = select(Users.telegram_id, Users.default_city)
+    users = await session.execute(statement=statement)
+    return users

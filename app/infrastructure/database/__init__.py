@@ -1,3 +1,3 @@
-from .requests import get_user, insert_user
+from .requests import get_user, insert_user, get_users
 
-__all__ = ("get_user", "insert_user")
+__all__ = ("get_user", "insert_user", "get_users")
